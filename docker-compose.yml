@@ -55,6 +55,8 @@ services:
       - redis
     expose:
       - "9000"
+    command: >
+      sh -c "php artisan migrate:fresh --seed && php-fpm"
 
   nginx:
     image: nginx:alpine

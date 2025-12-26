@@ -4,9 +4,9 @@ services:
     container_name: laravel_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_DATABASE:-laravel}
-      POSTGRES_USER: ${DB_USERNAME:-laravel_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+      POSTGRES_DB: laravel
+      POSTGRES_USER: laravel_user
+      POSTGRES_PASSWORD: secret
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -48,14 +48,27 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       VUE_APP_URL: http://localhost:5173
-    ports:
-      - "8000:8000" 
     networks:
       - laravel-network
     depends_on:
       - postgres
       - redis
+    expose:
+      - "9000"
 
+  nginx:
+    image: nginx:alpine
+    container_name: laravel_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./backend:/var/www/html
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - laravel-network
+    depends_on:
+      - app
 
   vue:
     build:
@@ -64,12 +77,10 @@ services:
     container_name: laravel_vue
     restart: unless-stopped
     volumes:
-      - ./:/app
+      - ./frontend:/app 
       - /app/node_modules
     ports:
       - "5173:5173"
-    environment:
-      HOST: 0.0.0.0
     networks:
       - laravel-network
     depends_on:
